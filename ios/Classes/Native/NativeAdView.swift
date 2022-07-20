@@ -91,7 +91,7 @@ class NativeAdView: NSObject, FlutterPlatformView {
                     for child in data["children"] as! [[String: Any]] {
                         let builtView = buildView(data: child)
                         (subView as! UIStackView).addArrangedSubview(builtView)
-                        if let height = child["height"] as! Float?, height == -1 {
+                        if let height = (child["height"] as? NSNumber)?.floatValue, height == -1 {
                             if lastId == child["id"] as! String {
                                 builtView.bottomAnchor.constraint(equalTo: subView.bottomAnchor).isActive = true
                             }
@@ -99,7 +99,7 @@ class NativeAdView: NSObject, FlutterPlatformView {
                                 builtView.topAnchor.constraint(equalTo: subView.topAnchor).isActive = true
                             }
                         }
-                        if let width = child["width"] as! Float?, width == -1 {
+                        if let width = (child["width"] as? NSNumber)?.floatValue, width == -1 {
                             if lastId == child["id"] as! String {
                                 builtView.trailingAnchor.constraint(equalTo: subView.trailingAnchor).isActive = true
                             }
@@ -143,10 +143,11 @@ class NativeAdView: NSObject, FlutterPlatformView {
             subView.layoutMargins = UIEdgeInsets(top: CGFloat(paddingTop), left: CGFloat(paddingLeft), bottom: CGFloat(paddingBottom), right: CGFloat(paddingRight))
         }
 
-        if let height = data["height"] as! Float?, height > 0 {
+        print(data);
+        if let height = (data["height"] as? NSNumber)?.floatValue, height > 0 {
             subView.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
         }
-        if let width = data["width"] as! Float?, width > 0 {
+        if let width = (data["width"] as? NSNumber)?.floatValue, width > 0 {
             subView.widthAnchor.constraint(equalToConstant: CGFloat(width)).isActive = true
         }
 
