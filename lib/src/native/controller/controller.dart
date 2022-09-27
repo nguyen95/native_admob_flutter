@@ -393,23 +393,31 @@ class NativeAdController extends LoadShowAd<NativeAdEvent>
     assertMobileAdsIsInitialized();
     if (!debugCheckAdWillReload(isLoaded, force)) return false;
     unitId ??= MobileAds.nativeAdUnitId ?? MobileAds.nativeAdTestUnitId;
-    isLoaded = (await channel.invokeMethod<bool>('loadAd', {
-      'unitId': unitId,
-      'options': (options ?? NativeAdOptions()).toJson(),
-      'nonPersonalizedAds': nonPersonalizedAds ?? this.nonPersonalizedAds,
-      'keywords': keywords,
-    }).timeout(
-      timeout ?? this.loadTimeout,
-      onTimeout: () {
-        if (!onEventController.isClosed && !isLoaded)
-          onEventController.add({
-            NativeAdEvent.loadFailed: AdError.timeoutError,
-          });
-        return false;
-      },
-    ))!;
-    if (isLoaded) lastLoadedTime = DateTime.now();
-    return isLoaded;
+    try {
+      isLoaded = (await channel.invokeMethod<bool>('loadAd', {
+        'unitId': unitId,
+        'options': (options ?? NativeAdOptions()).toJson(),
+        'nonPersonalizedAds': nonPersonalizedAds ?? this.nonPersonalizedAds,
+        'keywords': keywords,
+      }).timeout(
+        timeout ?? this.loadTimeout,
+        onTimeout: () {
+          if (!onEventController.isClosed && !isLoaded)
+            onEventController.add({
+              NativeAdEvent.loadFailed: AdError.timeoutError,
+            });
+          return false;
+        },
+      ))!;
+      if (isLoaded) lastLoadedTime = DateTime.now();
+      return isLoaded;
+    } catch (e) {
+      if (!onEventController.isClosed && !isLoaded)
+        onEventController.add({
+          NativeAdEvent.loadFailed: e.toString(),
+        });
+      return false;
+    }
   }
 
   /// Mutes This Ad programmatically.
